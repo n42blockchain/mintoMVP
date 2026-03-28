@@ -1,0 +1,119 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  merchantId   String
+  merchant     Merchant @relation(fields: [merchantId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Merchant {
+  id               String   @id @default(cuid())
+  name             String
+  logoUrl          String?
+  plan             String   @default("BASIC")
+  status           String   @default("ACTIVE")
+  registrationDate DateTime @default(now())
+  expireDate       DateTime
+  serviceCode      String   @unique
+  mintingLimit     Int      @default(10000)
+  transactionLimit Int      @default(100000)
+  tokenTypeLimit   Int      @default(10)
+  mintingUsed      Int      @default(0)
+  transactionUsed  Int      @default(0)
+
+  users   User[]
+  tokens  Token[]
+  wallets Wallet[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Token {
+  id          String  @id @default(cuid())
+  name        String
+  type        String
+  status      String  @default("ACTIVE")
+  totalMinted Int     @default(0)
+  distributed Int     @default(0)
+  recycled    Int     @default(0)
+  description String?
+  metadata    String?
+  merchantId  String
+  merchant    Merchant @relation(fields: [merchantId], references: [id])
+
+  walletBalances WalletBalance[]
+  transfers      Transfer[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([merchantId, type])
+}
+
+model Wallet {
+  id           String  @id @default(cuid())
+  name         String
+  address      String  @unique
+  type         String
+  status       String  @default("ACTIVE")
+  passwordHash String?
+  email        String?
+  holder       String?
+  contact      String?
+  merchantId   String
+  merchant     Merchant @relation(fields: [merchantId], references: [id])
+
+  balances          WalletBalance[]
+  outgoingTransfers Transfer[] @relation("SourceWallet")
+  incomingTransfers Transfer[] @relation("TargetWallet")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([merchantId, type])
+}
+
+model WalletBalance {
+  id       String @id @default(cuid())
+  walletId String
+  wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  tokenId  String
+  token    Token  @relation(fields: [tokenId], references: [id])
+  balance  Int    @default(0)
+
+  @@unique([walletId, tokenId])
+}
+
+model Transfer {
+  id             String   @id @default(cuid())
+  sourceWalletId String
+  sourceWallet   Wallet   @relation("SourceWallet", fields: [sourceWalletId], references: [id])
+  targetWalletId String
+  targetWallet   Wallet   @relation("TargetWallet", fields: [targetWalletId], references: [id])
+  tokenId        String
+  token          Token    @relation(fields: [tokenId], references: [id])
+  amount         Int
+  status         String   @default("COMPLETED")
+  sourceDid      String?
+  sourceHandle   String?
+  targetDid      String?
+  targetHandle   String?
+
+  createdAt DateTime @default(now())
+
+  @@index([sourceWalletId, createdAt])
+  @@index([targetWalletId, createdAt])
+}
