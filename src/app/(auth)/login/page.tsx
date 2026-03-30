@@ -7,9 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { useI18n } from "@/lib/i18n";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -28,7 +30,7 @@ export default function LoginPage() {
     setLoading(false);
 
     if (result?.error) {
-      setError("Invalid email or password");
+      setError(t("login.error"));
     } else {
       router.push("/home");
       router.refresh();
@@ -36,41 +38,53 @@ export default function LoginPage() {
   }
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader className="text-center">
-        <div className="mb-4 text-3xl font-bold text-primary">minto</div>
-        <CardTitle>Sign In</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="admin@minto.com"
-              required
-            />
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-indigo-50" />
+      <div className="absolute top-0 right-0 w-96 h-96 bg-blue-100/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+      <div className="absolute bottom-0 left-0 w-80 h-80 bg-indigo-100/40 rounded-full blur-3xl translate-y-1/3 -translate-x-1/4" />
+
+      <Card className="relative z-10 w-full max-w-md shadow-xl shadow-blue-900/5 border-gray-200/60 animate-fade-in">
+        <CardHeader className="text-center pb-2 pt-8">
+          <div className="mb-2 text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            minto
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              placeholder="Enter password"
-              required
-            />
-          </div>
-          {error && (
-            <p className="text-sm text-destructive">{error}</p>
-          )}
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Signing in..." : "Sign In"}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+          <p className="text-sm text-muted-foreground mb-2">{t("login.subtitle")}</p>
+          <CardTitle className="text-xl">{t("login.title")}</CardTitle>
+        </CardHeader>
+        <CardContent className="px-8 pb-8">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="email">{t("login.email")}</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="admin@minto.com"
+                className="h-11"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">{t("login.password")}</Label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                placeholder={t("login.password.placeholder")}
+                className="h-11"
+                required
+              />
+            </div>
+            {error && (
+              <p className="text-sm text-destructive bg-destructive/10 rounded-lg px-3 py-2">{error}</p>
+            )}
+            <Button type="submit" className="w-full h-11 text-base font-medium bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md shadow-blue-500/20" disabled={loading}>
+              {loading ? t("login.loading") : t("login.submit")}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

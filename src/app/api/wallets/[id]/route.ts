@@ -85,7 +85,18 @@ export async function DELETE(
     return NextResponse.json({ error: "Cannot delete master wallet" }, { status: 403 });
   }
 
-  await prisma.wallet.delete({ where: { id: params.id } });
+  await prisma.$transaction(async (tx) => {
+    await tx.transfer.deleteMany({
+      where: {
+        OR: [
+          { sourceWalletId: params.id },
+          { targetWalletId: params.id },
+        ],
+      },
+    });
+    await tx.walletBalance.deleteMany({ where: { walletId: params.id } });
+    await tx.wallet.delete({ where: { id: params.id } });
+  });
 
   return NextResponse.json({ success: true });
 }

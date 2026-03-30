@@ -14,51 +14,77 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Coins, Ticket, FileText, CreditCard, Gift, Sparkles } from "lucide-react";
-
-const tokenTypes = [
-  {
-    type: "CREDIT",
-    label: "Create Credits",
-    description: "Store money for prepaid card or gift card",
-    icon: Coins,
-  },
-  {
-    type: "COUPON",
-    label: "Create Coupons",
-    description: "Coupons for special products or promotion",
-    icon: Ticket,
-  },
-  {
-    type: "FLYER",
-    label: "Create Flyers",
-    description: "Non-transferable and automatically expired advertisements",
-    icon: FileText,
-  },
-  {
-    type: "MEMBERSHIP",
-    label: "Create Membership cards",
-    description: "Membership cards for loyal customers",
-    icon: CreditCard,
-  },
-  {
-    type: "GIFT_CARD",
-    label: "Create Gift Card",
-    description: "Gift cards for special occasions",
-    icon: Gift,
-  },
-  {
-    type: "CUSTOM",
-    label: "Customize",
-    description: "Create a custom token type",
-    icon: Sparkles,
-  },
-];
+import { Coins, Ticket, FileText, CreditCard, Gift, Sparkles, ArrowRight } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 export default function TokenCreatePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const preselectedType = searchParams.get("type");
+  const { t } = useI18n();
+
+  const tokenTypes = [
+    {
+      type: "CREDIT",
+      label: t("tokenCreate.credits"),
+      description: t("tokenCreate.credits.desc"),
+      icon: Coins,
+      color: "from-blue-500 to-blue-600",
+      shadow: "shadow-blue-500/20",
+      hoverBorder: "hover:border-blue-200",
+      bg: "hover:bg-blue-50/30",
+    },
+    {
+      type: "COUPON",
+      label: t("tokenCreate.coupons"),
+      description: t("tokenCreate.coupons.desc"),
+      icon: Ticket,
+      color: "from-emerald-500 to-emerald-600",
+      shadow: "shadow-emerald-500/20",
+      hoverBorder: "hover:border-emerald-200",
+      bg: "hover:bg-emerald-50/30",
+    },
+    {
+      type: "FLYER",
+      label: t("tokenCreate.flyers"),
+      description: t("tokenCreate.flyers.desc"),
+      icon: FileText,
+      color: "from-violet-500 to-violet-600",
+      shadow: "shadow-violet-500/20",
+      hoverBorder: "hover:border-violet-200",
+      bg: "hover:bg-violet-50/30",
+    },
+    {
+      type: "MEMBERSHIP",
+      label: t("tokenCreate.membership"),
+      description: t("tokenCreate.membership.desc"),
+      icon: CreditCard,
+      color: "from-orange-400 to-orange-500",
+      shadow: "shadow-orange-500/20",
+      hoverBorder: "hover:border-orange-200",
+      bg: "hover:bg-orange-50/30",
+    },
+    {
+      type: "GIFT_CARD",
+      label: t("tokenCreate.giftCard"),
+      description: t("tokenCreate.giftCard.desc"),
+      icon: Gift,
+      color: "from-pink-500 to-rose-500",
+      shadow: "shadow-pink-500/20",
+      hoverBorder: "hover:border-pink-200",
+      bg: "hover:bg-pink-50/30",
+    },
+    {
+      type: "CUSTOM",
+      label: t("tokenCreate.custom"),
+      description: t("tokenCreate.custom.desc"),
+      icon: Sparkles,
+      color: "from-gray-500 to-gray-600",
+      shadow: "shadow-gray-500/20",
+      hoverBorder: "hover:border-gray-300",
+      bg: "hover:bg-gray-50/50",
+    },
+  ];
 
   const [selectedType, setSelectedType] = useState<string | null>(preselectedType);
   const [dialogOpen, setDialogOpen] = useState(!!preselectedType);
@@ -92,7 +118,7 @@ export default function TokenCreatePage() {
 
     if (!res.ok) {
       const data = await res.json();
-      setError(data.error?.toString() || "Failed to create token");
+      setError(data.error?.toString() || t("tokenCreate.error"));
       return;
     }
 
@@ -101,23 +127,25 @@ export default function TokenCreatePage() {
     router.refresh();
   }
 
-  const selectedInfo = tokenTypes.find((t) => t.type === selectedType);
+  const selectedInfo = tokenTypes.find((tt) => tt.type === selectedType);
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Create / Mint</h1>
+    <div className="space-y-6 animate-fade-in">
+      <h1 className="text-2xl font-bold text-gray-900">{t("tokenCreate.title")}</h1>
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
         {tokenTypes.map((item) => (
           <Card
             key={item.type}
-            className="cursor-pointer transition-shadow hover:shadow-md"
+            className={`group cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 ${item.hoverBorder} ${item.bg}`}
             onClick={() => openDialog(item.type)}
           >
             <CardContent className="flex flex-col items-center justify-center p-8 text-center">
-              <item.icon className="mb-3 h-10 w-10 text-primary" />
-              <CardTitle className="text-base">{item.label}</CardTitle>
-              <CardDescription className="mt-2 text-xs">
+              <div className={`mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${item.color} shadow-lg ${item.shadow} transition-transform group-hover:scale-110`}>
+                <item.icon className="h-7 w-7 text-white" />
+              </div>
+              <CardTitle className="text-base text-gray-800">{item.label}</CardTitle>
+              <CardDescription className="mt-2 text-xs leading-relaxed">
                 {item.description}
               </CardDescription>
             </CardContent>
@@ -128,57 +156,70 @@ export default function TokenCreatePage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{selectedInfo?.label || "Create Token"}</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              {selectedInfo && (
+                <div className={`flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br ${selectedInfo.color}`}>
+                  <selectedInfo.icon className="h-4 w-4 text-white" />
+                </div>
+              )}
+              {selectedInfo?.label || t("token.createToken")}
+            </DialogTitle>
             <DialogDescription>{selectedInfo?.description}</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreate} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Token Name</Label>
+              <Label htmlFor="name">{t("tokenCreate.name")}</Label>
               <Input
                 id="name"
                 name="name"
-                placeholder="e.g. Store Credit"
+                placeholder={t("tokenCreate.name.placeholder")}
+                className="h-10"
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="totalMinted">Initial Mint Amount</Label>
+              <Label htmlFor="totalMinted">{t("tokenCreate.amount")}</Label>
               <Input
                 id="totalMinted"
                 name="totalMinted"
                 type="number"
                 min="1"
-                placeholder="e.g. 10000"
+                placeholder={t("tokenCreate.amount.placeholder")}
+                className="h-10"
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="description">Description (optional)</Label>
+              <Label htmlFor="description">{t("tokenCreate.desc")}</Label>
               <Input
                 id="description"
                 name="description"
-                placeholder="Description"
+                placeholder={t("tokenCreate.desc.placeholder")}
+                className="h-10"
               />
             </div>
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-sm text-destructive bg-destructive/10 rounded-lg px-3 py-2">{error}</p>}
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
-                Cancel
+                {t("common.cancel")}
               </Button>
-              <Button type="submit" disabled={loading}>
-                {loading ? "Creating..." : "Confirm"}
+              <Button type="submit" disabled={loading} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
+                {loading ? t("tokenCreate.creating") : t("common.confirm")}
               </Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
 
-      <Card>
-        <CardContent className="p-6">
-          <h3 className="font-semibold">Case studies & Tutorials:</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Learn best practices for creating and managing tokens.
-          </p>
+      <Card className="bg-gradient-to-r from-gray-50 to-blue-50/50 border-dashed">
+        <CardContent className="p-6 flex items-center justify-between">
+          <div>
+            <h3 className="font-semibold text-gray-800">{t("tokenCreate.tutorials")}</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {t("tokenCreate.tutorials.desc")}
+            </p>
+          </div>
+          <ArrowRight className="h-5 w-5 text-gray-300" />
         </CardContent>
       </Card>
     </div>

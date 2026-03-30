@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useI18n } from "@/lib/i18n";
 
 interface WalletFormDialogProps {
   open: boolean;
@@ -42,6 +43,7 @@ export function WalletFormDialog({
   wallet,
   onSuccess,
 }: WalletFormDialogProps) {
+  const { t } = useI18n();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [walletType, setWalletType] = useState(wallet?.type || "MANAGER");
@@ -56,13 +58,13 @@ export function WalletFormDialog({
     const confirmPassword = formData.get("confirmPassword") as string;
 
     if (mode === "create" && password !== confirmPassword) {
-      setError("Passwords don't match");
+      setError(t("walletForm.passwordMismatch"));
       setLoading(false);
       return;
     }
 
     if (mode === "edit" && password && password !== confirmPassword) {
-      setError("Passwords don't match");
+      setError(t("walletForm.passwordMismatch"));
       setLoading(false);
       return;
     }
@@ -92,7 +94,7 @@ export function WalletFormDialog({
 
     if (!res.ok) {
       const data = await res.json();
-      setError(data.error || "Operation failed");
+      setError(data.error || t("walletForm.operationFailed"));
       return;
     }
 
@@ -105,27 +107,27 @@ export function WalletFormDialog({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {mode === "create" ? "Create Sub-Wallet" : "Edit Wallet"}
+            {mode === "create" ? t("walletForm.createTitle") : t("walletForm.editTitle")}
           </DialogTitle>
           <DialogDescription>
             {mode === "create"
-              ? "Create a new sub-wallet for your team"
-              : "Update wallet information"}
+              ? t("walletForm.createDesc")
+              : t("walletForm.editDesc")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label>Name</Label>
+            <Label>{t("walletForm.name")}</Label>
             <Input
               name="name"
               defaultValue={wallet?.name}
-              placeholder="Wallet name"
+              placeholder={t("walletForm.name.placeholder")}
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Type</Label>
+            <Label>{t("walletForm.type")}</Label>
             <Select
               value={walletType}
               onValueChange={setWalletType}
@@ -135,60 +137,60 @@ export function WalletFormDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="MANAGER">Manager</SelectItem>
-                <SelectItem value="RECEIVER">Receiver</SelectItem>
-                <SelectItem value="CASHIER">Cashier</SelectItem>
+                <SelectItem value="MANAGER">{t("walletForm.type.manager")}</SelectItem>
+                <SelectItem value="RECEIVER">{t("walletForm.type.receiver")}</SelectItem>
+                <SelectItem value="CASHIER">{t("walletForm.type.cashier")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
             <Label>
-              {mode === "create" ? "Set Password" : "New Password (leave blank to keep)"}
+              {mode === "create" ? t("walletForm.setPassword") : t("walletForm.newPassword")}
             </Label>
             <Input
               name="password"
               type="password"
-              placeholder="Password"
+              placeholder={t("walletForm.password.placeholder")}
               required={mode === "create"}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Confirm Password</Label>
+            <Label>{t("walletForm.confirmPassword")}</Label>
             <Input
               name="confirmPassword"
               type="password"
-              placeholder="Confirm password"
+              placeholder={t("walletForm.confirmPassword.placeholder")}
               required={mode === "create"}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Email</Label>
+            <Label>{t("walletForm.email")}</Label>
             <Input
               name="email"
               type="email"
               defaultValue={wallet?.email || ""}
-              placeholder="Email address"
+              placeholder={t("walletForm.email.placeholder")}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Holder</Label>
+            <Label>{t("walletForm.holder")}</Label>
             <Input
               name="holder"
               defaultValue={wallet?.holder || ""}
-              placeholder="Holder name"
+              placeholder={t("walletForm.holder.placeholder")}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Contact</Label>
+            <Label>{t("walletForm.contact")}</Label>
             <Input
               name="contact"
               defaultValue={wallet?.contact || ""}
-              placeholder="Contact number"
+              placeholder={t("walletForm.contact.placeholder")}
             />
           </div>
 
@@ -196,10 +198,10 @@ export function WalletFormDialog({
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Saving..." : "Confirm"}
+              {loading ? t("walletForm.saving") : t("common.confirm")}
             </Button>
           </DialogFooter>
         </form>

@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useI18n } from "@/lib/i18n";
 
 interface Wallet {
   id: string;
@@ -49,6 +50,7 @@ export function TransferDialog({
   wallets,
   onSuccess,
 }: TransferDialogProps) {
+  const { t } = useI18n();
   const [targetWalletId, setTargetWalletId] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -64,7 +66,7 @@ export function TransferDialog({
     const amount = parseInt(formData.get("amount") as string);
 
     if (amount > availableBalance) {
-      setError("Insufficient balance");
+      setError(t("transferDialog.insufficientBalance"));
       setLoading(false);
       return;
     }
@@ -84,7 +86,7 @@ export function TransferDialog({
 
     if (!res.ok) {
       const data = await res.json();
-      setError(data.error || "Transfer failed");
+      setError(data.error || t("transferDialog.failed"));
       return;
     }
 
@@ -96,17 +98,17 @@ export function TransferDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Transfer {tokenName}</DialogTitle>
+          <DialogTitle>{t("transferDialog.title", { token: tokenName })}</DialogTitle>
           <DialogDescription>
-            From {sourceWalletName} (Balance: {availableBalance.toLocaleString()})
+            {t("transferDialog.from", { wallet: sourceWalletName, balance: availableBalance.toLocaleString() })}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label>Target Wallet</Label>
+            <Label>{t("transferDialog.target")}</Label>
             <Select value={targetWalletId} onValueChange={setTargetWalletId} required>
               <SelectTrigger>
-                <SelectValue placeholder="Select wallet" />
+                <SelectValue placeholder={t("transferDialog.target.placeholder")} />
               </SelectTrigger>
               <SelectContent>
                 {otherWallets.map((w) => (
@@ -119,13 +121,13 @@ export function TransferDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Amount</Label>
+            <Label>{t("transferDialog.amount")}</Label>
             <Input
               name="amount"
               type="number"
               min="1"
               max={availableBalance}
-              placeholder="Enter amount"
+              placeholder={t("transferDialog.amount.placeholder")}
               required
             />
           </div>
@@ -134,10 +136,10 @@ export function TransferDialog({
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={loading || !targetWalletId}>
-              {loading ? "Transferring..." : "Confirm"}
+              {loading ? t("transferDialog.transferring") : t("common.confirm")}
             </Button>
           </DialogFooter>
         </form>
